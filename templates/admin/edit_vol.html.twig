@@ -1,0 +1,353 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modifier le Vol {{ vol.numero }} - Administration{% endblock %}
+
+{% block body %}
+<!-- Page Header -->
+<div class="page-header text-center">
+    <div class="container">
+        <h1 class="display-5 mb-3">
+            <i class="bi bi-pencil-square"></i> Modifier le Vol
+        </h1>
+        <p class="lead">
+            Vol <span class="badge bg-primary fs-6">{{ vol.numero }}</span> - 
+            {{ vol.villeDepart.nom }} → {{ vol.villeArrivee.nom }}
+        </p>
+    </div>
+</div>
+
+<!-- Breadcrumb -->
+<nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{{ path('home') }}">Accueil</a></li>
+        <li class="breadcrumb-item"><a href="{{ path('admin_home') }}">Administration</a></li>
+        <li class="breadcrumb-item active">Modifier Vol {{ vol.numero }}</li>
+    </ol>
+</nav>
+
+<div class="row">
+    <!-- Current Flight Info -->
+    <div class="col-lg-4 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="bi bi-info-circle"></i> Informations Actuelles</h6>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <strong><i class="bi bi-tag"></i> Numéro:</strong><br>
+                    <span class="badge bg-dark fs-6">{{ vol.numero }}</span>
+                </div>
+                <div class="mb-3">
+                    <strong><i class="bi bi-geo-alt"></i> Trajet:</strong><br>
+                    {{ vol.villeDepart.nom }} → {{ vol.villeArrivee.nom }}
+                </div>
+                <div class="mb-3">
+                    <strong><i class="bi bi-clock"></i> Départ:</strong><br>
+                    {{ vol.heureDepart|date('d/m/Y H:i') }}
+                </div>
+                <div class="mb-3">
+                    <strong><i class="bi bi-clock"></i> Arrivée:</strong><br>
+                    {{ vol.heureArrivee|date('d/m/Y H:i') }}
+                </div>
+                <div class="mb-3">
+                    <strong><i class="bi bi-currency-euro"></i> Prix:</strong><br>
+                    <span class="text-success fw-bold">{{ vol.prix }}€</span>
+                    {% if vol.reduction %}
+                        <span class="badge bg-success ms-1">Réduction</span>
+                    {% endif %}
+                </div>
+                <div class="mb-3">
+                    <strong><i class="bi bi-people"></i> Places:</strong><br>
+                    <span class="badge bg-{{ vol.placesDisponibles > 10 ? 'success' : (vol.placesDisponibles > 5 ? 'warning' : 'danger') }}">
+                        {{ vol.placesDisponibles }} places
+                    </span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Quick Actions -->
+        <div class="card mt-3">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="bi bi-lightning"></i> Actions Rapides</h6>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <button type="button" class="btn btn-outline-warning btn-sm" onclick="duplicateFlight()">
+                        <i class="bi bi-files"></i> Dupliquer ce vol
+                    </button>
+                    <button type="button" class="btn btn-outline-danger btn-sm" onclick="confirmDelete()">
+                        <i class="bi bi-trash"></i> Supprimer ce vol
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Edit Form -->
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-pencil"></i> Modifier les Informations
+                </h5>
+            </div>
+            <div class="card-body">
+                {{ form_start(form, {'attr': {'class': 'needs-validation', 'novalidate': true}}) }}
+                
+                <div class="row">
+                    <!-- Numéro (lecture seule) -->
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">
+                            <i class="bi bi-tag"></i> Numéro de Vol
+                        </label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-airplane-engines"></i></span>
+                            <input type="text" class="form-control" value="{{ vol.numero }}" disabled>
+                        </div>
+                        <div class="form-text">Le numéro de vol ne peut pas être modifié</div>
+                    </div>
+                    
+                    <!-- Prix -->
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">
+                            <i class="bi bi-currency-euro"></i> Prix (€)
+                        </label>
+                        {{ form_widget(form.prix, {'attr': {'class': 'form-control', 'placeholder': 'Ex: 150.00'}}) }}
+                        {{ form_errors(form.prix) }}
+                    </div>
+                </div>
+
+                <div class="row">
+                    <!-- Heure de départ -->
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">
+                            <i class="bi bi-calendar-event"></i> Date et Heure de Départ
+                        </label>
+                        {{ form_widget(form.heure_depart, {'attr': {'class': 'form-control'}}) }}
+                        {{ form_errors(form.heure_depart) }}
+                    </div>
+                    
+                    <!-- Heure d'arrivée -->
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">
+                            <i class="bi bi-calendar-check"></i> Date et Heure d'Arrivée
+                        </label>
+                        {{ form_widget(form.heure_arrivee, {'attr': {'class': 'form-control'}}) }}
+                        {{ form_errors(form.heure_arrivee) }}
+                    </div>
+                </div>
+
+                <div class="row">
+                    <!-- Ville de départ -->
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">
+                            <i class="bi bi-geo-alt"></i> Ville de Départ
+                        </label>
+                        {{ form_widget(form.villeDepart, {'attr': {'class': 'form-select'}}) }}
+                        {{ form_errors(form.villeDepart) }}
+                    </div>
+                    
+                    <!-- Ville d'arrivée -->
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">
+                            <i class="bi bi-geo-alt-fill"></i> Ville d'Arrivée
+                        </label>
+                        {{ form_widget(form.villeArrivee, {'attr': {'class': 'form-select'}}) }}
+                        {{ form_errors(form.villeArrivee) }}
+                    </div>
+                </div>
+
+                <div class="row">
+                    <!-- Places disponibles -->
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">
+                            <i class="bi bi-people"></i> Nombre de Places
+                        </label>
+                        {{ form_widget(form.places_disponibles, {'attr': {'class': 'form-control', 'min': '1', 'max': '500'}}) }}
+                        {{ form_errors(form.places_disponibles) }}
+                        <div class="form-text">
+                            Places actuelles: <span class="fw-bold">{{ vol.placesDisponibles }}</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Réduction -->
+                    <div class="col-md-6 mb-3 d-flex align-items-end">
+                        <div class="form-check form-switch">
+                            {{ form_widget(form.reduction, {'attr': {'class': 'form-check-input', 'role': 'switch'}}) }}
+                            <label class="form-check-label">
+                                <i class="bi bi-percent"></i> Réduction Disponible
+                            </label>
+                        </div>
+                        {{ form_errors(form.reduction) }}
+                    </div>
+                </div>
+
+                <!-- Changes Preview -->
+                <div class="card bg-info bg-opacity-10 border-info mt-4" id="changesPreview" style="display: none;">
+                    <div class="card-header bg-info bg-opacity-25">
+                        <h6 class="mb-0"><i class="bi bi-exclamation-diamond"></i> Modifications Détectées</h6>
+                    </div>
+                    <div class="card-body" id="changesContent">
+                        <!-- Changes will be displayed here -->
+                    </div>
+                </div>
+
+                <!-- Form Actions -->
+                <div class="row mt-4">
+                    <div class="col-12 d-flex justify-content-between">
+                        <a href="{{ path('admin_home') }}" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left"></i> Retour sans sauvegarder
+                        </a>
+                        <div>
+                            <button type="reset" class="btn btn-outline-warning me-2" id="resetBtn">
+                                <i class="bi bi-arrow-clockwise"></i> Annuler les modifications
+                            </button>
+                            <button type="submit" class="btn btn-success" id="saveBtn" disabled>
+                                <i class="bi bi-check-lg"></i> Sauvegarder les modifications
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                {{ form_end(form) }}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Hidden forms for actions -->
+<form id="deleteForm" method="post" action="{{ path('admin_delete_vol', {'id': vol.id}) }}" style="display: none;">
+    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ vol.id) }}">
+</form>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('form');
+    const saveBtn = document.getElementById('saveBtn');
+    const changesPreview = document.getElementById('changesPreview');
+    const changesContent = document.getElementById('changesContent');
+    
+    // Original values for comparison
+    const originalValues = {
+        prix: {{ vol.prix }},
+        heure_depart: '{{ vol.heureDepart|date('Y-m-d\\TH:i') }}',
+        heure_arrivee: '{{ vol.heureArrivee|date('Y-m-d\\TH:i') }}',
+        villeDepart: {{ vol.villeDepart.id }},
+        villeArrivee: {{ vol.villeArrivee.id }},
+        places_disponibles: {{ vol.placesDisponibles }},
+        reduction: {{ vol.reduction ? 'true' : 'false' }}
+    };
+    
+    // Form validation
+    form.addEventListener('submit', function(e) {
+        if (!form.checkValidity()) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        form.classList.add('was-validated');
+    });
+    
+    // Reset button
+    document.getElementById('resetBtn').addEventListener('click', function() {
+        form.classList.remove('was-validated');
+        changesPreview.style.display = 'none';
+        saveBtn.disabled = true;
+        checkForChanges();
+    });
+    
+    // Monitor form changes
+    const inputs = form.querySelectorAll('input, select');
+    inputs.forEach(input => {
+        input.addEventListener('change', checkForChanges);
+        input.addEventListener('input', checkForChanges);
+    });
+    
+    function checkForChanges() {
+        const changes = [];
+        let hasChanges = false;
+        
+        // Check each field for changes
+        const prixInput = form.querySelector('[name*="prix"]');
+        if (prixInput && parseFloat(prixInput.value) !== originalValues.prix) {
+            changes.push(`<strong>Prix:</strong> ${originalValues.prix}€ → ${prixInput.value}€`);
+            hasChanges = true;
+        }
+        
+        const departInput = form.querySelector('[name*="heure_depart"]');
+        if (departInput && departInput.value !== originalValues.heure_depart) {
+            changes.push(`<strong>Heure de départ:</strong> Modifiée`);
+            hasChanges = true;
+        }
+        
+        const arriveeInput = form.querySelector('[name*="heure_arrivee"]');
+        if (arriveeInput && arriveeInput.value !== originalValues.heure_arrivee) {
+            changes.push(`<strong>Heure d'arrivée:</strong> Modifiée`);
+            hasChanges = true;
+        }
+        
+        const villeDepartSelect = form.querySelector('[name*="villeDepart"]');
+        if (villeDepartSelect && parseInt(villeDepartSelect.value) !== originalValues.villeDepart) {
+            const newText = villeDepartSelect.options[villeDepartSelect.selectedIndex]?.text || '';
+            changes.push(`<strong>Ville de départ:</strong> → ${newText}`);
+            hasChanges = true;
+        }
+        
+        const villeArriveeSelect = form.querySelector('[name*="villeArrivee"]');
+        if (villeArriveeSelect && parseInt(villeArriveeSelect.value) !== originalValues.villeArrivee) {
+            const newText = villeArriveeSelect.options[villeArriveeSelect.selectedIndex]?.text || '';
+            changes.push(`<strong>Ville d'arrivée:</strong> → ${newText}`);
+            hasChanges = true;
+        }
+        
+        const placesInput = form.querySelector('[name*="places_disponibles"]');
+        if (placesInput && parseInt(placesInput.value) !== originalValues.places_disponibles) {
+            changes.push(`<strong>Places:</strong> ${originalValues.places_disponibles} → ${placesInput.value}`);
+            hasChanges = true;
+        }
+        
+        const reductionInput = form.querySelector('[name*="reduction"]');
+        if (reductionInput && reductionInput.checked.toString() !== originalValues.reduction) {
+            const status = reductionInput.checked ? 'Activée' : 'Désactivée';
+            changes.push(`<strong>Réduction:</strong> ${status}`);
+            hasChanges = true;
+        }
+        
+        // Update UI based on changes
+        if (hasChanges) {
+            changesContent.innerHTML = '<ul class="mb-0"><li>' + changes.join('</li><li>') + '</li></ul>';
+            changesPreview.style.display = 'block';
+            saveBtn.disabled = false;
+            saveBtn.classList.remove('btn-success');
+            saveBtn.classList.add('btn-warning');
+            saveBtn.innerHTML = '<i class="bi bi-exclamation-triangle"></i> Sauvegarder les modifications';
+        } else {
+            changesPreview.style.display = 'none';
+            saveBtn.disabled = true;
+            saveBtn.classList.remove('btn-warning');
+            saveBtn.classList.add('btn-success');
+            saveBtn.innerHTML = '<i class="bi bi-check-lg"></i> Sauvegarder les modifications';
+        }
+    }
+    
+    // Initial check
+    checkForChanges();
+});
+
+// Duplicate flight function
+function duplicateFlight() {
+    if (confirm('Voulez-vous créer un nouveau vol basé sur celui-ci ?')) {
+        // Redirect to new flight page with current values as parameters
+        const url = new URL('{{ path('admin_new_vol') }}', window.location.origin);
+        url.searchParams.set('duplicate', '{{ vol.id }}');
+        window.location.href = url.toString();
+    }
+}
+
+// Confirm delete function
+function confirmDelete() {
+    if (confirm('Êtes-vous sûr de vouloir supprimer le vol {{ vol.numero }} ?\n\nCette action est irréversible.')) {
+        document.getElementById('deleteForm').submit();
+    }
+}
+</script>
+{% endblock %}

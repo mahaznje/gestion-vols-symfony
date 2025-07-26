@@ -1,0 +1,233 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Nouveau Vol - Administration{% endblock %}
+
+{% block body %}
+<!-- Page Header -->
+<div class="page-header text-center">
+    <div class="container">
+        <h1 class="display-5 mb-3">
+            <i class="bi bi-plus-circle"></i> Nouveau Vol
+        </h1>
+        <p class="lead">Ajouter un nouveau vol au système</p>
+    </div>
+</div>
+
+<!-- Breadcrumb -->
+<nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{{ path('home') }}">Accueil</a></li>
+        <li class="breadcrumb-item"><a href="{{ path('admin_home') }}">Administration</a></li>
+        <li class="breadcrumb-item active">Nouveau Vol</li>
+    </ol>
+</nav>
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-airplane"></i> Informations du Vol
+                </h5>
+            </div>
+            <div class="card-body">
+                {{ form_start(form, {'attr': {'class': 'needs-validation', 'novalidate': true}}) }}
+                
+                <div class="row">
+                    <!-- Numéro du vol (désactivé car généré automatiquement) -->
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">
+                            <i class="bi bi-tag"></i> Numéro de Vol
+                        </label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-airplane-engines"></i></span>
+                            <input type="text" class="form-control" value="Généré automatiquement" disabled>
+                        </div>
+                        <div class="form-text">Le numéro sera généré automatiquement (ex: AB1234)</div>
+                    </div>
+                    
+                    <!-- Prix -->
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">
+                            <i class="bi bi-currency-euro"></i> Prix (€)
+                        </label>
+                        {{ form_widget(form.prix, {'attr': {'class': 'form-control', 'placeholder': 'Ex: 150.00'}}) }}
+                        {{ form_errors(form.prix) }}
+                    </div>
+                </div>
+
+                <div class="row">
+                    <!-- Heure de départ -->
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">
+                            <i class="bi bi-calendar-event"></i> Date et Heure de Départ
+                        </label>
+                        {{ form_widget(form.heure_depart, {'attr': {'class': 'form-control'}}) }}
+                        {{ form_errors(form.heure_depart) }}
+                    </div>
+                    
+                    <!-- Heure d'arrivée -->
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">
+                            <i class="bi bi-calendar-check"></i> Date et Heure d'Arrivée
+                        </label>
+                        {{ form_widget(form.heure_arrivee, {'attr': {'class': 'form-control'}}) }}
+                        {{ form_errors(form.heure_arrivee) }}
+                    </div>
+                </div>
+
+                <div class="row">
+                    <!-- Ville de départ -->
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">
+                            <i class="bi bi-geo-alt"></i> Ville de Départ
+                        </label>
+                        {{ form_widget(form.villeDepart, {'attr': {'class': 'form-select'}}) }}
+                        {{ form_errors(form.villeDepart) }}
+                        <div class="form-text">
+                            <a href="{{ path('admin_new_ville') }}" class="text-decoration-none">
+                                <i class="bi bi-plus-lg"></i> Ajouter une nouvelle ville
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <!-- Ville d'arrivée -->
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">
+                            <i class="bi bi-geo-alt-fill"></i> Ville d'Arrivée
+                        </label>
+                        {{ form_widget(form.villeArrivee, {'attr': {'class': 'form-select'}}) }}
+                        {{ form_errors(form.villeArrivee) }}
+                        <div class="form-text">
+                            <a href="{{ path('admin_new_ville') }}" class="text-decoration-none">
+                                <i class="bi bi-plus-lg"></i> Ajouter une nouvelle ville
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <!-- Places disponibles -->
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">
+                            <i class="bi bi-people"></i> Nombre de Places
+                        </label>
+                        {{ form_widget(form.places_disponibles, {'attr': {'class': 'form-control', 'min': '1', 'max': '500', 'placeholder': 'Ex: 150'}}) }}
+                        {{ form_errors(form.places_disponibles) }}
+                    </div>
+                    
+                    <!-- Réduction -->
+                    <div class="col-md-6 mb-3 d-flex align-items-end">
+                        <div class="form-check form-switch">
+                            {{ form_widget(form.reduction, {'attr': {'class': 'form-check-input', 'role': 'switch'}}) }}
+                            <label class="form-check-label">
+                                <i class="bi bi-percent"></i> Réduction Disponible
+                            </label>
+                        </div>
+                        {{ form_errors(form.reduction) }}
+                    </div>
+                </div>
+
+                <!-- Preview Card -->
+                <div class="card bg-light mt-4" id="previewCard" style="display: none;">
+                    <div class="card-header">
+                        <h6 class="mb-0"><i class="bi bi-eye"></i> Aperçu du Vol</h6>
+                    </div>
+                    <div class="card-body" id="previewContent">
+                        <!-- Preview will be generated by JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Form Actions -->
+                <div class="row mt-4">
+                    <div class="col-12 d-flex justify-content-between">
+                        <a href="{{ path('admin_home') }}" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left"></i> Retour
+                        </a>
+                        <div>
+                            <button type="reset" class="btn btn-outline-warning me-2" id="resetBtn">
+                                <i class="bi bi-arrow-clockwise"></i> Réinitialiser
+                            </button>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-lg"></i> Créer le Vol
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                {{ form_end(form) }}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('form');
+    const previewCard = document.getElementById('previewCard');
+    const previewContent = document.getElementById('previewContent');
+    
+    // Form validation
+    form.addEventListener('submit', function(e) {
+        if (!form.checkValidity()) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        form.classList.add('was-validated');
+    });
+    
+    // Reset button
+    document.getElementById('resetBtn').addEventListener('click', function() {
+        form.classList.remove('was-validated');
+        previewCard.style.display = 'none';
+    });
+    
+    // Live preview
+    const inputs = form.querySelectorAll('input, select');
+    inputs.forEach(input => {
+        input.addEventListener('change', updatePreview);
+        input.addEventListener('input', updatePreview);
+    });
+    
+    function updatePreview() {
+        const villeDepart = form.querySelector('[name*="villeDepart"]');
+        const villeArrivee = form.querySelector('[name*="villeArrivee"]');
+        const heureDepart = form.querySelector('[name*="heure_depart"]');
+        const heureArrivee = form.querySelector('[name*="heure_arrivee"]');
+        const prix = form.querySelector('[name*="prix"]');
+        const places = form.querySelector('[name*="places_disponibles"]');
+        const reduction = form.querySelector('[name*="reduction"]');
+        
+        if (villeDepart.value && villeArrivee.value && heureDepart.value && prix.value) {
+            const departText = villeDepart.options[villeDepart.selectedIndex]?.text || '';
+            const arriveeText = villeArrivee.options[villeArrivee.selectedIndex]?.text || '';
+            
+            previewContent.innerHTML = `
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6><i class="bi bi-airplane-engines text-primary"></i> Trajet</h6>
+                        <p><strong>${departText}</strong> → <strong>${arriveeText}</strong></p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6><i class="bi bi-currency-euro text-success"></i> Prix</h6>
+                        <p><strong>${prix.value}€</strong> ${reduction.checked ? '<span class="badge bg-success ms-2">Réduction</span>' : ''}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6><i class="bi bi-clock text-info"></i> Horaires</h6>
+                        <p><small>Départ: ${heureDepart.value}</small><br>
+                           <small>Arrivée: ${heureArrivee.value || 'Non définie'}</small></p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6><i class="bi bi-people text-warning"></i> Capacité</h6>
+                        <p><strong>${places.value || '0'}</strong> places disponibles</p>
+                    </div>
+                </div>
+            `;
+            previewCard.style.display = 'block';
+        } else {
+            previewCard.style.display = 'none';
+        }
+    }
+});
+</script>
+{% endblock %}

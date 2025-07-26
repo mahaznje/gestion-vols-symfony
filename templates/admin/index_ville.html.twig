@@ -1,0 +1,40 @@
+{# templates/admin/index_ville.html.twig #}
+
+{% extends 'base.html.twig' %}
+
+{% block title %}Liste des Villes{% endblock %}
+
+{% block body %}
+    <h1>Liste des Villes</h1>
+
+    <a href="{{ path('admin_new_ville') }}" class="btn btn-primary">Ajouter une Ville</a>
+
+    <table class="table mt-4">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Nom de la Ville</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for ville in villes %}
+                <tr>
+                    <td>{{ ville.id }}</td>
+                    <td>{{ ville.nom }}</td>
+                    <td>
+                        <a href="{{ path('admin_edit_ville', {'id': ville.id}) }}" class="btn btn-warning btn-sm">Modifier</a>
+                        <form method="post" action="{{ path('admin_delete_ville', {'id': ville.id}) }}" style="display:inline;" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette ville ?');">
+                            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ ville.id) }}">
+                            <button type="submit" class="btn btn-danger btn-sm">Supprimer</button>
+                        </form>
+                    </td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="3" class="text-center">Aucune ville disponible.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

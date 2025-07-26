@@ -1,0 +1,182 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Nouvelle Ville - Administration{% endblock %}
+
+{% block body %}
+<!-- Page Header -->
+<div class="page-header text-center">
+    <div class="container">
+        <h1 class="display-5 mb-3">
+            <i class="bi bi-geo-alt"></i> Nouvelle Ville
+        </h1>
+        <p class="lead">Ajouter une nouvelle destination</p>
+    </div>
+</div>
+
+<!-- Breadcrumb -->
+<nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{{ path('home') }}">Accueil</a></li>
+        <li class="breadcrumb-item"><a href="{{ path('admin_home') }}">Administration</a></li>
+        <li class="breadcrumb-item active">Nouvelle Ville</li>
+    </ol>
+</nav>
+
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-building"></i> Informations de la Ville
+                </h5>
+            </div>
+            <div class="card-body">
+                {{ form_start(form, {'attr': {'class': 'needs-validation', 'novalidate': true}}) }}
+                
+                <div class="mb-4">
+                    <label for="ville_nom" class="form-label">
+                        <i class="bi bi-geo-alt-fill"></i> Nom de la Ville *
+                    </label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-building"></i></span>
+                        {{ form_widget(form.nom, {
+                            'attr': {
+                                'class': 'form-control form-control-lg',
+                                'placeholder': 'Ex: Paris, Londres, Tokyo...',
+                                'required': true,
+                                'id': 'ville_nom'
+                            }
+                        }) }}
+                    </div>
+                    {{ form_errors(form.nom) }}
+                    <div class="form-text">
+                        <i class="bi bi-info-circle"></i> 
+                        Le nom de la ville doit être unique dans le système
+                    </div>
+                </div>
+
+                <!-- Preview Card -->
+                <div class="card bg-light" id="previewCard" style="display: none;">
+                    <div class="card-header">
+                        <h6 class="mb-0"><i class="bi bi-eye"></i> Aperçu</h6>
+                    </div>
+                    <div class="card-body text-center">
+                        <i class="bi bi-geo-alt-fill display-4 text-primary mb-3"></i>
+                        <h4 id="previewNom">Nom de la ville</h4>
+                        <p class="text-muted">Cette ville sera disponible comme destination</p>
+                    </div>
+                </div>
+
+                <!-- Quick Add Common Cities -->
+                <div class="mb-4">
+                    <label class="form-label">
+                        <i class="bi bi-lightning"></i> Villes Populaires
+                    </label>
+                    <div class="d-flex flex-wrap gap-2">
+                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="fillCity('Paris')">Paris</button>
+                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="fillCity('Londres')">Londres</button>
+                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="fillCity('Madrid')">Madrid</button>
+                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="fillCity('Rome')">Rome</button>
+                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="fillCity('Berlin')">Berlin</button>
+                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="fillCity('Amsterdam')">Amsterdam</button>
+                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="fillCity('Barcelone')">Barcelone</button>
+                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="fillCity('Lisbonne')">Lisbonne</button>
+                    </div>
+                    <div class="form-text">Cliquez sur une ville pour la sélectionner rapidement</div>
+                </div>
+
+                <!-- Form Actions -->
+                <div class="d-flex justify-content-between align-items-center pt-3 border-top">
+                    <a href="{{ path('admin_home') }}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left"></i> Retour
+                    </a>
+                    <div>
+                        <button type="reset" class="btn btn-outline-warning me-2" id="resetBtn">
+                            <i class="bi bi-arrow-clockwise"></i> Réinitialiser
+                        </button>
+                        <button type="submit" class="btn btn-success">
+                            <i class="bi bi-check-lg"></i> Ajouter la Ville
+                        </button>
+                    </div>
+                </div>
+
+                {{ form_end(form) }}
+            </div>
+        </div>
+
+        <!-- Help Card -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="bi bi-question-circle"></i> Aide</h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6><i class="bi bi-check-circle text-success"></i> Conseils</h6>
+                        <ul class="list-unstyled small">
+                            <li><i class="bi bi-dot"></i> Utilisez le nom complet de la ville</li>
+                            <li><i class="bi bi-dot"></i> Évitez les abréviations</li>
+                            <li><i class="bi bi-dot"></i> Respectez la casse (Paris, pas PARIS)</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6><i class="bi bi-exclamation-triangle text-warning"></i> Attention</h6>
+                        <ul class="list-unstyled small">
+                            <li><i class="bi bi-dot"></i> Les doublons ne sont pas autorisés</li>
+                            <li><i class="bi bi-dot"></i> Le nom ne peut pas être modifié après création</li>
+                            <li><i class="bi bi-dot"></i> Minimum 2 caractères requis</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('form');
+    const nomInput = document.getElementById('ville_nom');
+    const previewCard = document.getElementById('previewCard');
+    const previewNom = document.getElementById('previewNom');
+    
+    // Form validation
+    form.addEventListener('submit', function(e) {
+        if (!form.checkValidity()) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        form.classList.add('was-validated');
+    });
+    
+    // Reset button
+    document.getElementById('resetBtn').addEventListener('click', function() {
+        form.classList.remove('was-validated');
+        previewCard.style.display = 'none';
+        nomInput.focus();
+    });
+    
+    // Live preview
+    nomInput.addEventListener('input', function() {
+        const value = this.value.trim();
+        if (value.length > 1) {
+            previewNom.textContent = value;
+            previewCard.style.display = 'block';
+        } else {
+            previewCard.style.display = 'none';
+        }
+    });
+    
+    // Focus on input when page loads
+    nomInput.focus();
+});
+
+// Fill city function for quick buttons
+function fillCity(cityName) {
+    const nomInput = document.getElementById('ville_nom');
+    nomInput.value = cityName;
+    nomInput.dispatchEvent(new Event('input'));
+    nomInput.focus();
+}
+</script>
+{% endblock %}

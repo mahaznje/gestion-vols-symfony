@@ -1,0 +1,196 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Accueil - Liste des Vols{% endblock %}
+
+{% block body %}
+<!-- Page Header -->
+<div class="page-header text-center">
+    <div class="container">
+        <h1 class="display-4 mb-3">
+            <i class="bi bi-airplane-engines"></i> Vols Disponibles
+        </h1>
+        <p class="lead">Découvrez toutes nos destinations</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <!-- Quick Actions for Admin -->
+        {% if is_granted('ROLE_ADMIN') %}
+            <div class="card mb-4">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0"><i class="bi bi-tools"></i> Actions Administrateur</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-2">
+                            <a href="{{ path('admin_new_vol') }}" class="btn btn-primary w-100">
+                                <i class="bi bi-plus-circle"></i> Nouveau Vol
+                            </a>
+                        </div>
+                        <div class="col-md-6 mb-2">
+                            <a href="{{ path('admin_new_ville') }}" class="btn btn-secondary w-100">
+                                <i class="bi bi-geo-alt"></i> Nouvelle Ville
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+
+        <!-- Flights Table -->
+        {% if vols|length > 0 %}
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-list-ul"></i> Liste des Vols 
+                        <span class="badge bg-primary ms-2">{{ vols|length }} vol(s)</span>
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th><i class="bi bi-hash"></i> Numéro</th>
+                                    <th><i class="bi bi-clock"></i> Départ</th>
+                                    <th><i class="bi bi-geo-alt"></i> De</th>
+                                    <th><i class="bi bi-clock"></i> Arrivée</th>
+                                    <th><i class="bi bi-geo-alt-fill"></i> Vers</th>
+                                    <th><i class="bi bi-currency-euro"></i> Prix</th>
+                                    <th><i class="bi bi-tag"></i> Réduction</th>
+                                    <th><i class="bi bi-people"></i> Places</th>
+                                    {% if is_granted('ROLE_ADMIN') %}
+                                        <th><i class="bi bi-gear"></i> Actions</th>
+                                    {% endif %}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for vol in vols %}
+                                    <tr>
+                                        <td>
+                                            <span class="badge bg-dark fs-6">{{ vol.numero }}</span>
+                                        </td>
+                                        <td>
+                                            <small class="text-muted">{{ vol.heureDepart|date('d/m/Y') }}</small><br>
+                                            <strong>{{ vol.heureDepart|date('H:i') }}</strong>
+                                        </td>
+                                        <td>
+                                            <i class="bi bi-geo-alt text-primary"></i>
+                                            {{ vol.villeDepart.nom }}
+                                        </td>
+                                        <td>
+                                            <small class="text-muted">{{ vol.heureArrivee|date('d/m/Y') }}</small><br>
+                                            <strong>{{ vol.heureArrivee|date('H:i') }}</strong>
+                                        </td>
+                                        <td>
+                                            <i class="bi bi-geo-alt-fill text-success"></i>
+                                            {{ vol.villeArrivee.nom }}
+                                        </td>
+                                        <td>
+                                            <span class="fw-bold text-success">{{ vol.prix }}€</span>
+                                        </td>
+                                        <td>
+                                            {% if vol.reduction %}
+                                                <span class="badge bg-success">
+                                                    <i class="bi bi-percent"></i> Oui
+                                                </span>
+                                            {% else %}
+                                                <span class="badge bg-secondary">Non</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% set availabilityClass = vol.placesDisponibles > 10 ? 'success' : (vol.placesDisponibles > 5 ? 'warning' : 'danger') %}
+                                            <span class="badge bg-{{ availabilityClass }}">
+                                                {{ vol.placesDisponibles }}
+                                            </span>
+                                        </td>
+                                        {% if is_granted('ROLE_ADMIN') %}
+                                            <td>
+                                                <div class="btn-group btn-group-sm" role="group">
+                                                    <a href="{{ path('admin_edit_vol', {'id': vol.id}) }}" 
+                                                       class="btn btn-outline-primary" 
+                                                       title="Modifier">
+                                                        <i class="bi bi-pencil"></i>
+                                                    </a>
+                                                    <form method="post" 
+                                                          action="{{ path('admin_delete_vol', {'id': vol.id}) }}" 
+                                                          style="display: inline-block;"
+                                                          onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer le vol {{ vol.numero }} ?')">
+                                                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ vol.id) }}">
+                                                        <button type="submit" 
+                                                                class="btn btn-outline-danger" 
+                                                                title="Supprimer">
+                                                            <i class="bi bi-trash"></i>
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                            </td>
+                                        {% endif %}
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <!-- Empty State -->
+            <div class="card">
+                <div class="card-body text-center py-5">
+                    <i class="bi bi-airplane display-1 text-muted mb-3"></i>
+                    <h3 class="text-muted">Aucun vol disponible</h3>
+                    <p class="text-muted">Il n'y a actuellement aucun vol dans notre système.</p>
+                    {% if is_granted('ROLE_ADMIN') %}
+                        <a href="{{ path('admin_new_vol') }}" class="btn btn-primary">
+                            <i class="bi bi-plus-circle"></i> Ajouter le premier vol
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Statistics Cards -->
+{% if vols|length > 0 %}
+    <div class="row mt-4">
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <i class="bi bi-airplane-engines display-6 text-primary mb-2"></i>
+                    <h5 class="card-title">{{ vols|length }}</h5>
+                    <p class="card-text text-muted">Vol(s) total</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <i class="bi bi-percent display-6 text-success mb-2"></i>
+                    <h5 class="card-title">{{ vols|filter(v => v.reduction)|length }}</h5>
+                    <p class="card-text text-muted">Avec réduction</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <i class="bi bi-people display-6 text-info mb-2"></i>
+                    <h5 class="card-title">{{ vols|map(v => v.placesDisponibles)|reduce((carry, v) => carry + v, 0) }}</h5>
+                    <p class="card-text text-muted">Places totales</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <i class="bi bi-currency-euro display-6 text-warning mb-2"></i>
+                    <h5 class="card-title">{{ (vols|map(v => v.prix)|reduce((carry, v) => carry + v, 0) / vols|length)|round }}€</h5>
+                    <p class="card-text text-muted">Prix moyen</p>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endif %}
+{% endblock %}
